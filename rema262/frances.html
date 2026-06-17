@@ -1,0 +1,99 @@
+// Editar as linhas 53, 56, 59 
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Redirecionando...</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f5f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+  }
+  .caixa {
+    text-align: center;
+    padding: 2rem;
+  }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 4px solid #ddd;
+    border-top-color: #555;
+    border-radius: 50%;
+    margin: 0 auto 1rem auto;
+    animation: girar 0.8s linear infinite;
+  }
+  @keyframes girar {
+    to { transform: rotate(360deg); }
+  }
+  p {
+    font-size: 0.95rem;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<div class="caixa">
+  <div class="spinner"></div>
+  <p id="mensagem">Redirecionando, aguarde...</p>
+</div>
+
+<script>
+  // ===================== CONFIGURAÇÃO =====================
+  // Cole aqui a URL do seu Apps Script publicado (terminada em /exec)
+  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyyvRPmvM8oiqxEBdAEx_9KVdPyUFzJPj-BZ4E-d_T-4HT17cJYI3luulRQzhY7l_mR/exec";
+
+  // Código deste link específico (igual ao cadastrado na aba "Links")
+  const CODIGO_LINK = "frances262rema";
+
+  // URL de segurança, usada se o Apps Script não responder a tempo
+  const URL_FALLBACK = "https://docs.google.com/forms/d/e/1FAIpQLSf28tCs1IoaQafKNc7Yys0wTlok-MOWhWplb_oUzYpsaqHVNg/viewform?usp=publish-editor";
+
+  // Tempo máximo de espera pelo registro do clique (em milissegundos)
+  const TEMPO_LIMITE_MS = 4000;
+  // ==========================================================
+
+  function redirecionar(url) {
+    window.location.replace(url);
+  }
+
+  function buscarERegistrar() {
+    const referrer = encodeURIComponent(document.referrer || "direto");
+    const userAgent = encodeURIComponent(navigator.userAgent || "");
+    const urlCompleta = `${URL_APPS_SCRIPT}?codigo=${CODIGO_LINK}&referrer=${referrer}&ua=${userAgent}`;
+
+    const controlador = new AbortController();
+    const timeoutId = setTimeout(() => controlador.abort(), TEMPO_LIMITE_MS);
+
+    fetch(urlCompleta, { signal: controlador.signal })
+      .then(resposta => resposta.json())
+      .then(dados => {
+        clearTimeout(timeoutId);
+        if (dados && dados.destino) {
+          redirecionar(dados.destino);
+        } else {
+          document.getElementById("mensagem").textContent =
+            "Link não encontrado. Redirecionando para o padrão...";
+          redirecionar(URL_FALLBACK);
+        }
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+        redirecionar(URL_FALLBACK);
+      });
+  }
+
+  buscarERegistrar();
+</script>
+
+</body>
+</html>
